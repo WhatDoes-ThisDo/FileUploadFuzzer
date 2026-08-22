@@ -1,5 +1,5 @@
 # FileUploadFuzzer
-Simple file upload fuzzer for FireFox-exported curl statements, including web shell verification.
+Simple file upload fuzzer using browser-exported curl commands, including web shell verification.
 
 Placeholders in file `post_curl.txt`:
 - `TARGET`: target URL
