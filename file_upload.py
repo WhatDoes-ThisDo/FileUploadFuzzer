@@ -1,6 +1,5 @@
 import re
 import subprocess
-import filetype_class
 import json
 import argparse
 
