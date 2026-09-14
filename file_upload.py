@@ -49,7 +49,7 @@ def process_text(payload_text_template, json_data, header=None, extension=None, 
 def process_curl(curl_subprocess_input_list, json_data, header=None, extension=None, mime_header=None):
 	curl_subprocess_output_list = []
 	for item in curl_subprocess_input_list:
-		curl_subprocess_output_list.append(process_text(item,json_data))
+		curl_subprocess_output_list.append(process_text(item,json_data, header, extension, mime_header))
 	return curl_subprocess_output_list
 
 def print_attack_summary(json_data, script_args, bypass_type):
@@ -66,6 +66,7 @@ def print_attack_verbose_summary(json_data, script_args, bypass_type):
 
 def confirm_file_upload(curl_subprocess, json_data, header=None, extension=None, mime_header=None):
 	processed_get_curl = process_curl(curl_subprocess,json_data,header,extension,mime_header)
+	#print(processed_get_curl)
 	verification_response = subprocess.run(processed_get_curl, capture_output=True,text=True)
 	return verification_response.stdout
 
